@@ -1,0 +1,69 @@
+# gerenciador_ad
+
+# Ativando o módulo do Active Directory
+Import-Module ActiveDirectory
+
+
+
+function Criar-Usuario {
+    $nome = Read-Host "Digite o nome do usuário"
+    $sobrenome = Read-Host "Digite o sobrenome do usuário"
+    $samAccount = Read-Host "Digite o nome de login (samAccountName)"
+    $senha = Read-Host "Digite a senha inicial" -AsSecureString
+    New-ADUser -Name "$nome $sobrenome" -GivenName $nome -Surname $sobrenome -SamAccountName $samAccount -UserPrincipalName "$samAccount@dominio.com" -AccountPassword $senha -Enabled $true
+    Write-Host "Usuário $nome $sobrenome criado com sucesso!" -ForegroundColor Green
+}
+
+function Deletar-Usuario {
+    $usuario = Read-Host "Digite o nome do usuário para deletar"
+    Remove-ADUser -Identity $usuario -Confirm:$false
+    Write-Host "Usuário $usuario removido com sucesso!" -ForegroundColor Red
+}
+
+function Resetar-Senha {
+    $usuario = Read-Host "Digite o nome do usuário"
+    $senha = Read-Host "Digite a nova senha" -AsSecureString
+    Set-ADAccountPassword -Identity $usuario -NewPassword $senha -Reset
+    Write-Host "Senha redefinida para o usuário $usuario!" -ForegroundColor Yellow
+}
+
+function Listar-Computadores {
+    Get-ADComputer -Filter * | Select-Object Name,OperatingSystem | Format-Table -AutoSize
+}
+
+function Adicionar-Grupo {
+    $usuario = Read-Host "Digite o nome do usuário"
+    $grupo = Read-Host "Digite o nome do grupo"
+    Add-ADGroupMember -Identity $grupo -Members $usuario
+    Write-Host "Usuário $usuario adicionado ao grupo $grupo!" -ForegroundColor Green
+}
+
+function Exibir-Menu {
+    Clear-Host
+    Write-Host "====================================" -ForegroundColor Cyan
+    Write-Host "      MENU DE GERENCIAMENTO AD      " -ForegroundColor Green
+    Write-Host "====================================" -ForegroundColor Cyan
+    Write-Host "1 - Criar usuário no AD"
+    Write-Host "2 - Deletar usuário no AD"
+    Write-Host "3 - Resetar senha"
+    Write-Host "4 - Listar computadores"
+    Write-Host "5 - Adicionar usuário a um grupo"
+    Write-Host "0 - Sair"
+}
+
+do {
+    Exibir-Menu
+    $opcao = Read-Host "Digite o número correspondente à opção desejada"
+
+    switch ($opcao) {
+        1 { Criar-Usuario }
+        2 { Deletar-Usuario }
+        3 { Resetar-Senha }
+        4 { Listar-Computadores }
+        5 { Adicionar-Grupo }
+        0 { Write-Host "Saindo do script..." -ForegroundColor Magenta; break }
+        default { Write-Host "Opção inválida. Tente novamente." -ForegroundColor Red }
+    }
+
+    Pause
+} while ($opcao -ne 0)
